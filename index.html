@@ -21,7 +21,7 @@
         <h2>1. Abrir Ordem de Serviço</h2>
         <input type="number" id="veiculo_id" placeholder="ID do Veículo (ex: 1)">
         <input type="text" id="descricao" placeholder="Descrição (ex: Troca de óleo)">
-        <button onclick="criarOS()">Criar OS</button>
+        <button onclick="criarOS()">Criar Ordem de Serviço</button>
         <div id="logOS" class="log">Aguardando...</div>
 
         <h2 style="margin-top: 30px;">2. Atualizar Etapa (Notifica o Telegram)</h2>
@@ -49,11 +49,11 @@
                 });
                 const data = await res.json();
                 if(res.ok) {
-                    log.innerHTML = `✅ OS Criada com Sucesso! (ID: ${data.id})`;
+                    log.innerHTML = ` Ordem de Serviço Criada com Sucesso! (ID: ${data.id})`;
                     document.getElementById('os_id').value = data.id; 
                 } else throw new Error(JSON.stringify(data));
             } catch (e) {
-                log.className = "log error"; log.innerHTML = "❌ Erro: " + e.message;
+                log.className = "log error"; log.innerHTML = "Erro: " + e.message;
             }
         }
 
@@ -70,10 +70,10 @@
                     })
                 });
                 const data = await res.json();
-                if(res.ok) log.innerHTML = "✅ Etapa salva! Verifique o Telegram.";
+                if(res.ok) log.innerHTML = " Etapa salva! Verifique o Telegram.";
                 else throw new Error(JSON.stringify(data));
             } catch (e) {
-                log.className = "log error"; log.innerHTML = "❌ Erro: " + e.message;
+                log.className = "log error"; log.innerHTML = " Erro: " + e.message;
             }
         }
     </script>
