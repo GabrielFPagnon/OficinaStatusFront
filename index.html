@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel - Oficina Status</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; justify-content: center; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: #2c3e50; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { background-color: #3498db; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #2980b9; }
+        .btn-etapa { background-color: #27ae60; }
+        .btn-etapa:hover { background-color: #219150; }
+        .log { margin-top: 10px; padding: 10px; background: #e8f6f3; border-left: 4px solid #1abc9c; font-size: 14px; min-height: 20px; }
+        .error { background: #fadbd8; border-left: 4px solid #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>1. Abrir Ordem de Serviço</h2>
+        <input type="number" id="veiculo_id" placeholder="ID do Veículo (ex: 1)">
+        <input type="text" id="descricao" placeholder="Descrição (ex: Troca de óleo)">
+        <button onclick="criarOS()">Criar OS</button>
+        <div id="logOS" class="log">Aguardando...</div>
+
+        <h2 style="margin-top: 30px;">2. Atualizar Etapa (Notifica o Telegram)</h2>
+        <input type="number" id="os_id" placeholder="ID da OS gerada acima">
+        <input type="text" id="nome_etapa" placeholder="Nome da Etapa (ex: Orçamento)">
+        <button class="btn-etapa" onclick="avancarEtapa()">Avançar Etapa e Notificar</button>
+        <div id="logEtapa" class="log">Aguardando...</div>
+    </div>
+
+    <script>
+        // COLOQUE A SUA URL DA AZURE AQUI (Sem barra no final)
+        const URL_BASE = "https://api-oficina-status.azurewebsites.net";
+
+        async function criarOS() {
+            const log = document.getElementById('logOS');
+            log.className = "log"; log.innerHTML = "Enviando...";
+            try {
+                // Tenta sem barra, se falhar, você pode adicionar a barra depois
+                const res = await fetch(`${URL_BASE}/ordens-servico`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        veiculo_id: parseInt(document.getElementById('veiculo_id').value),
+                        descricao: document.getElementById('descricao').value
+                    })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    log.innerHTML = `✅ OS Criada com Sucesso! (ID: ${data.id})`;
+                    document.getElementById('os_id').value = data.id; 
+                } else throw new Error(JSON.stringify(data));
+            } catch (e) {
+                log.className = "log error"; log.innerHTML = "❌ Erro: " + e.message;
+            }
+        }
+
+        async function avancarEtapa() {
+            const log = document.getElementById('logEtapa');
+            log.className = "log"; log.innerHTML = "Disparando notificação...";
+            try {
+                const res = await fetch(`${URL_BASE}/etapas`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        ordem_servico_id: parseInt(document.getElementById('os_id').value),
+                        nome: document.getElementById('nome_etapa').value
+                    })
+                });
+                const data = await res.json();
+                if(res.ok) log.innerHTML = "✅ Etapa salva! Verifique o Telegram.";
+                else throw new Error(JSON.stringify(data));
+            } catch (e) {
+                log.className = "log error"; log.innerHTML = "❌ Erro: " + e.message;
+            }
+        }
+    </script>
+</body>
+</html>
